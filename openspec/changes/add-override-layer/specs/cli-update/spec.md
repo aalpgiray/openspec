@@ -1,26 +1,37 @@
 ## ADDED Requirements
 
-### Requirement: Update composes overrides and constitution
+### Requirement: Update composes override-or-default bodies and prepends constitution
 
-The update command SHALL regenerate skills and commands by layering package defaults first and then project overrides, and SHALL prepend the project constitution to the generated AI tool context.
+The update command SHALL regenerate each skill and command using the matching override body when present and the package default otherwise, and SHALL prepend the project constitution to the generated context.
 
-#### Scenario: Update layers overrides on defaults
+#### Scenario: Update uses override bodies
 
 - **WHEN** a user runs `openspec update`
-- **AND** `openspec/overrides/` contains override files matching generated artifacts
-- **THEN** each regenerated artifact SHALL contain the package default content followed by the matching override content
+- **AND** `openspec/overrides/` contains files matching known workflows
+- **THEN** each matching workflow's regenerated skill and command SHALL use the override content as its body
+- **AND** OpenSpec-managed frontmatter SHALL still be generated for those artifacts
 
 #### Scenario: Update prepends constitution
 
 - **WHEN** a user runs `openspec update`
 - **AND** `openspec/constitution.md` exists
-- **THEN** the regenerated AI tool context SHALL begin with the constitution content
+- **THEN** the regenerated context SHALL begin with the constitution content
 
 #### Scenario: Update without overrides or constitution
 
 - **WHEN** a user runs `openspec update`
 - **AND** neither `openspec/overrides/` nor `openspec/constitution.md` is present
 - **THEN** the regenerated artifacts SHALL be identical to today's output
+
+### Requirement: Update reports overridden workflows
+
+The update command SHALL report which workflows are overridden so users know those workflows did not receive package default updates.
+
+#### Scenario: Overridden workflows surfaced in output
+
+- **WHEN** `openspec update` regenerates artifacts and one or more workflows are overridden
+- **THEN** the command output SHALL name the overridden workflows
+- **AND** SHALL indicate their package defaults were not applied
 
 ### Requirement: Cleanup never targets override sources
 

@@ -2,7 +2,7 @@
 
 ### Requirement: Project override directory
 
-The system SHALL recognize an `openspec/overrides/` directory as the home for project-specific guidance that augments generated skills and commands.
+The system SHALL recognize an `openspec/overrides/` directory holding one file per workflow, named by its canonical workflow identifier, as the source of project-specific bodies for generated skills and commands.
 
 #### Scenario: Override directory is optional
 
@@ -22,20 +22,35 @@ The system SHALL recognize an `openspec/overrides/` directory as the home for pr
 - **THEN** it SHALL construct paths using path join utilities
 - **AND** SHALL NOT assume a forward-slash separator
 
-### Requirement: Override-to-artifact matching by explicit name
+### Requirement: Override matching by canonical workflow identifier
 
-The system SHALL match each override file to the generated artifact it extends by explicit skill or command identifier drawn from the canonical generated lists, not by pattern matching against tool directories.
+The system SHALL match each override file to a workflow by explicit canonical workflow identifier, not by pattern matching against tool directories.
 
-#### Scenario: Override matches a generated artifact
+#### Scenario: Override matches a known workflow
 
-- **WHEN** an override file names a skill or command identifier that exists in the canonical generated lists
-- **THEN** its content SHALL be applied to that artifact during generation
+- **WHEN** an override file is named for a workflow identifier in the canonical workflow list (for example `apply.md`)
+- **THEN** its content SHALL be used as that workflow's body during generation
 
-#### Scenario: Override has no matching base artifact
+#### Scenario: Override matches no known workflow
 
-- **WHEN** an override file names an identifier that is not in the canonical generated lists
-- **THEN** the system SHALL emit a clear warning naming the unmatched override
+- **WHEN** an override file's name does not correspond to any canonical workflow identifier
+- **THEN** the system SHALL emit a clear warning naming the unmatched file
 - **AND** SHALL continue generating the remaining artifacts
+
+### Requirement: Full-swap replacement, no merge
+
+The system SHALL use a present override as the full body for its workflow, replacing the package default body without merging.
+
+#### Scenario: Override present
+
+- **WHEN** `openspec/overrides/<workflow>.md` exists
+- **THEN** the generated skill and command for that workflow SHALL use the override content as the body across every configured tool
+- **AND** the package default body for that workflow SHALL NOT be included
+
+#### Scenario: Override absent
+
+- **WHEN** no override exists for a workflow
+- **THEN** the generated skill and command SHALL use the package default body
 
 ### Requirement: Overrides survive update
 
@@ -46,4 +61,4 @@ The system SHALL preserve project override sources across `openspec update` runs
 - **GIVEN** a project with override files in `openspec/overrides/`
 - **WHEN** the user runs `openspec update`
 - **THEN** the override files in `openspec/overrides/` SHALL remain unchanged
-- **AND** their content SHALL appear in the regenerated skills and commands
+- **AND** their content SHALL appear as the body of the regenerated skills and commands

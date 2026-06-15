@@ -1,23 +1,31 @@
 ## ADDED Requirements
 
-### Requirement: Layered generation with a managed override region
+### Requirement: Body selection from override or default
 
-Generation SHALL compose each skill and command from package defaults followed by matching project override content, placing the override content inside a clearly demarcated OpenSpec-managed region.
+Generation SHALL select each generated skill and command body from the matching project override when present, and otherwise from the package default.
 
-#### Scenario: Override content is appended within a managed region
+#### Scenario: Override drives the body
 
-- **WHEN** a generated artifact has matching override content
-- **THEN** the default content SHALL appear first
-- **AND** the override content SHALL be appended inside an explicitly demarcated, OpenSpec-managed region
+- **WHEN** a workflow has a matching override
+- **THEN** the generated body SHALL be the override content
+- **AND** the package default body SHALL NOT be emitted for that workflow
 
-#### Scenario: Generated artifact remains fully managed
+#### Scenario: Default drives the body
 
-- **WHEN** generation runs again
-- **THEN** the generated artifact in the tool directory SHALL be fully regenerated from defaults plus the current override source
-- **AND** no prior hand-edits to the generated file SHALL be required to preserve override content
+- **WHEN** a workflow has no matching override
+- **THEN** the generated body SHALL be the package default content
 
-#### Scenario: No override content
+### Requirement: Frontmatter and formatting remain managed
 
-- **WHEN** a generated artifact has no matching override content
-- **THEN** the artifact SHALL contain only the package default content
-- **AND** no empty managed region SHALL be emitted
+Generation SHALL retain ownership of artifact frontmatter and per-tool formatting even when a workflow's body is overridden.
+
+#### Scenario: Overridden artifact keeps managed frontmatter
+
+- **WHEN** a workflow body is overridden
+- **THEN** the generated skill and command SHALL still carry OpenSpec-managed frontmatter (including `name`, `description`, `generatedBy`, and tags where applicable)
+- **AND** SHALL apply the same per-tool formatting and instruction transforms as a non-overridden artifact
+
+#### Scenario: Constitution prepended ahead of the body
+
+- **WHEN** a constitution is present
+- **THEN** its content SHALL be prepended to the generated body, ahead of the override-or-default content
